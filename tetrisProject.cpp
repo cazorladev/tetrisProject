@@ -3,6 +3,8 @@
 #include <ctime>
 #include <cstdlib>
 #include <csignal>
+#include <thread>
+#include <chrono>
 
 using namespace std;
 
@@ -37,6 +39,8 @@ void resetGame();
 void signalHandler(int signum);
 void renderBoard();
 Piece* createRandomPiece();
+bool canPlacePiece(Piece* piece, int dx, int dy);
+void gameLoop();
 
 int main() {
    signal(SIGINT, signalHandler);  // Registra el manejador de señales
@@ -81,4 +85,34 @@ void renderBoard() {
 
 Piece* createRandomPiece() {
    return new Piece(static_cast<Tetromino>(rand() % TETROMINO_SHAPES.size()));
+}
+
+bool canPlacePiece(Piece* piece, int dx, int dy) {
+   for (int i = 0; i < piece->shape[i].size(); ++i) {
+      for (int j = 0; j < piece->shape[i].size(); ++j) {
+         if (piece->shape[i][j]) {
+            int newX = piece->x + j + dx;
+            int newY = piece->y + i + dy;
+            if (newX < 0 || newX >= WIDTH || newY < 0 || newY >= HEIGHT || board[newY][newX]) {
+               return false;
+            }
+         }
+      }
+   }
+   return true;   
+}
+
+void gameLoop() {
+   Piece* activePiece = createRandomPiece();
+   bool gameOver = false;
+   while (!gameOver) {
+      renderBoard();
+      if (canPlacePiece(activePiece, 0, 1)) {
+         activePiece->y++;
+         } else {
+            gameOver = true;
+      }
+      this_thread::sleep_for(chrono::milliseconds(500));
+   }
+   cout << "Juego terminado.\n";
 }
