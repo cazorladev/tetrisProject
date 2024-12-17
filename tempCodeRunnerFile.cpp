@@ -9,7 +9,7 @@ using namespace std;
 const int WIDTH = 10, HEIGHT = 20;
 
 // Enumeración para las piezas tetromino
-enum Tetromino {I, J, L, O, S, T, Z};
+enum Tetronimo {I, J, L, O, S, T, Z};
 
 struct Piece {
    vector<vector<int>> shape;
