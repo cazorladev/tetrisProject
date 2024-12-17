@@ -17,7 +17,7 @@ void displayTitleScreen() {
          << "=====================================\n\n"
          << "Presiona Enter para comenzar...\n";
 }
-
+// sss
 void resetGame() {
     board.assign(HEIGHT, vector<int>(WIDTH, 0));
     cout << "Juego reiniciado.\n";
