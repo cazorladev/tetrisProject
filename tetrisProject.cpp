@@ -1,7 +1,6 @@
 #include <iostream>     // Manejo de entrada/salida estándar
 #include <vector>       // Uso de vectores para las piezas y el tablero
-#include <ctime>        // Generación de números aleatorios basados en tiempo
-#include <cstdlib>      // Funciones de utilidad como rand()
+#include <random>
 #include <thread>       // Manejo de hilos para pausas y temporización
 #include <chrono>       // Gestión precisa de tiempo
 #include <algorithm>    // Funciones de utilidad como all_of() y fill()
@@ -81,7 +80,6 @@ void displayGameOver();
 void signalHandler(int signum);
 
 int main() {
-   srand(static_cast<unsigned int>(time(0)));   // Inicializar la semilla aleatoria
    setlocale(LC_ALL, "es_ES.UTF-8");            // Establecer el idioma de la consola
    signal(SIGINT, signalHandler);               // Manejar interrupciones con Ctrl + C            
    displayTitleScreen();                        // Mostrar pantalla de bienvenida
@@ -183,8 +181,13 @@ void renderGame(const Piece *activePiece, const Piece *nextPiece, bool isPaused)
 }
 
 
-Piece *createRandomPiece() {              // Genera una nueva pieza aleatoria
-   return new Piece(static_cast<Tetromino>(rand() % TETROMINO_SHAPES.size()));
+Piece *createRandomPiece() {
+    static std::random_device rd;           // Fuente de entropía
+    static std::mt19937 gen(rd());          // Generador basado en Mersenne Twister
+    static std::uniform_int_distribution<> distrib(0, TETROMINO_SHAPES.size() - 1); // Distribución uniforme
+
+    // Generar un índice aleatorio y crear la pieza
+    return new Piece(static_cast<Tetromino>(distrib(gen)));
 }
 
 bool canPlacePiece(const Piece *piece, int dx, int dy) {             // Verifica si se puede colocar la pieza en la posición deseada
