@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <thread>
 #include <chrono>
+#include <algorithm>
 #include <queue>
 #include <csignal>
 
@@ -34,6 +35,7 @@ const vector<vector<vector<int>>> TETROMINO_SHAPES = {
    {{0, 1, 1}, {1, 1, 0}},    // S
    {{1, 1, 0}, {0, 1, 1}}     // Z
 };
+
 // Estructura de datos para representar una pieza
 struct Piece {
    vector<vector<int>> shape;
@@ -50,23 +52,38 @@ queue<Piece*> upcomingPieces;
 bool gameCancelled = false; // Variable global para manejar la cancelación
 
 // === Declaración de Funciones ===
-// Configuración del juego
+// estructura-base
 void displayTitleScreen();
 void resetGame();
 void clearConsole();
 
+// Renderización
+void renderGame(const Piece *activePiece, const Piece *nextPiece, bool isPaused);
 
-void signalHandler(int signum);
-void renderBoard();
+// Game-mechanics
 Piece* createRandomPiece();
-bool canPlacePiece(Piece* piece, int dx, int dy);
-void gameLoop();
-
+bool canPlacePiece(const Piece *piece, int dx, int dy);
+void placePiece(const Piece *piece);                                               // Colocar una pieza en el tablero
+void clearFullLines();
 void rotatePiece(Piece *piece);
 
-// Entrada de usuario
+// User-input
 char getKeyPress();
 void handleInput(Piece *activePiece, bool *nextPiece);
+
+// Función principal del juego
+void gameLoop();
+
+// Funciones de finalización del juego
+void freePieceMemory(Piece *activePiece, Piece *nextPiece);
+void displayGameOver();
+void signalHandler(int signum);
+
+
+
+void renderBoard();
+
+
 
 
 int main() {
@@ -113,11 +130,6 @@ void resetGame() {
 
 void clearConsole() {
    cout << "\033[2J\033[H";
-}
-
-void signalHandler(int signum) {
-   cout << "Juego cancelado con señal " << signum << ".\n";
-   gameCancelled = true;  // Detener el juego cuando se reciba una señal
 }
 
 void renderBoard() {
@@ -200,4 +212,64 @@ void handleInput(Piece *activePiece, bool &isPaused) {                  // Proce
          }
       }
    }
+}
+
+void rotatePiece(Piece *piece) {
+   vector<vector<int>> rotated(piece->shape[0].size(), vector<int>(piece->shape.size()));
+   for (int i = 0; i < piece->shape.size(); ++i) {
+      for (int j = 0; j < piece->shape[i].size(); ++j) {
+         rotated[j][piece->shape.size() - i - 1] = piece->shape[i][j];
+      }
+   }
+   if (canPlacePiece(new Piece(rotated, piece->x, piece->y), 0, 0)) {
+      piece->shape = rotated;
+   } else {
+      piece->x = canPlacePiece(new Piece(rotated, piece->x - 1, piece->y), 0, 0) ? piece->x - 1 : canPlacePiece(new Piece(rotated, piece->x + 1, piece->y), 0, 0) ? piece->x + 1
+                                                                                                                                                                  : piece->x;
+      piece->shape = canPlacePiece(new Piece(rotated, piece->x, piece->y), 0, 0) ? rotated : piece->shape;
+   }
+}
+
+Piece *createRandomPiece() {              // Genera una nueva pieza aleatoria
+   return new Piece(static_cast<Tetromino>(rand() % TETROMINO_SHAPES.size()));
+}
+
+bool canPlacePiece(const Piece *piece, int dx, int dy) {             // Verifica si se puede colocar la pieza en la posición deseada
+   for (int i = 0; i < piece->shape.size(); ++i) {
+      for (int j = 0; j < piece->shape[i].size(); ++j) {
+         if (piece->shape[i][j]) {
+            int newX = piece->x + j + dx, newY = piece->y + i + dy;
+            if (newX < 0 || newX >= WIDTH || newY < 0 || newY >= HEIGHT || board[newY][newX]) {
+               return false;
+            }
+         }
+      }
+   }
+   return true;
+}
+
+void placePiece(const Piece *piece) {              // Coloca la pieza en el tablero
+   for (int i = 0; i < piece->shape.size(); ++i) {
+      for (int j = 0; j < piece->shape[i].size(); ++j) {
+         board[piece->y + i][piece->x + j] = piece->shape[i][j] ? 1 : board[piece->y + i][piece->x + j];
+      }
+   }
+}
+
+void clearFullLines() {             // Limpia las líneas completas del tablero
+   for (int i = 0; i < HEIGHT; ++i) {
+      if (all_of(board[i].begin(), board[i].end(), [](int cell) { return cell == 1; })) {
+         board.erase(board.begin() + i);                          // Elimina la línea completa
+         board.insert(board.begin(), vector<int>(WIDTH, 0));      // Agrega una nueva línea vacía
+         score += PUNTOS_POR_LINEA;                               // Usar constante para puntos
+         linesCleared++;
+         level = linesCleared % NIVEL_INCREMENTO == 0 ? level + 1 : level;                         // Usar constante para nivel
+         speed = linesCleared % NIVEL_INCREMENTO == 0 ? max(VELOCIDAD_MINIMA, speed - 25) : speed; // Usar constante para velocidad
+      }
+   }
+}
+
+void signalHandler(int signum) {
+   cout << "Juego cancelado con señal " << signum << ".\n";
+   gameCancelled = true;  // Detener el juego cuando se reciba una señal
 }
