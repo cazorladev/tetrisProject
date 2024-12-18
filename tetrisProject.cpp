@@ -53,7 +53,7 @@ bool gameCancelled = false;   // Variable global para manejar la cancelación
 
 // === Declaración de Funciones ===
 // estructura-base
-void displayTitleScreen();
+void displayTitleScreen(); // PRUEBA
 void resetGame();
 void clearConsole();
 
@@ -331,11 +331,11 @@ void freePieceMemory(Piece *activePiece, Piece *nextPiece) {               // Li
 }
 
 void displayGameOver() {               // Muestra el mensaje de Game Over
-   cout << "\033[2J\033[H"
-        << "|====================|\n"
-        << "|    FIN DEL JUEGO   |\n"
-        << "|====================|\n\n"
-        << "Puntaje final: " << score << "\n";
+   cout  << "\033[2J\033[H"
+         << "|====================|\n"
+         << "|    FIN DEL JUEGO   |\n"
+         << "|====================|\n\n"
+         << "Puntaje final: " << score << "\n";
 }
 
 void signalHandler(int signum) {             // Maneja señales como SIGINT
