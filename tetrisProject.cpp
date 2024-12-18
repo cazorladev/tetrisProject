@@ -93,11 +93,9 @@ int main() {
    displayTitleScreen();
    getKeyPress();
    clearConsole();
-
-
    resetGame();
-
-   cout << "Juego terminado.\n";
+   gameLoop();
+   cout << "\nGracias por jugar Tetris!\n";
    return 0;
 }
 
@@ -267,6 +265,19 @@ void clearFullLines() {             // Limpia las líneas completas del tablero
          speed = linesCleared % NIVEL_INCREMENTO == 0 ? max(VELOCIDAD_MINIMA, speed - 25) : speed; // Usar constante para velocidad
       }
    }
+}
+
+void freePieceMemory(Piece *activePiece, Piece *nextPiece) {
+   delete activePiece;
+   delete nextPiece;
+}
+
+void displayGameOver() {
+      cout << "\033[2J\033[H"
+        << "|====================|\n"
+        << "|    FIN DEL JUEGO   |\n"
+        << "|====================|\n\n"
+        << "Puntaje final: " << score << "\n";
 }
 
 void signalHandler(int signum) {
