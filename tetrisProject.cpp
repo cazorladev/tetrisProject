@@ -7,6 +7,15 @@
 #include <queue>
 #include <csignal>
 
+// Libreria para multiplataformas
+#ifdef _WIN32
+#include <conio.h>
+#include <windows.h>
+#else
+#include <termios.h>
+#include <unistd.h>
+#endif
+
 using namespace std;
 
 const int WIDTH = 10, HEIGHT = 20;
@@ -53,12 +62,19 @@ Piece* createRandomPiece();
 bool canPlacePiece(Piece* piece, int dx, int dy);
 void gameLoop();
 
+void rotatePiece(Piece *piece);
+
+// Entrada de usuario
+char getKeyPress();
+void handleInput(Piece *activePiece, bool *nextPiece);
+
+
 int main() {
    srand(static_cast<unsigned int>(time(0)));
    setlocale(LC_ALL, "es_ES.UTF-8");
    signal(SIGINT, signalHandler);
    displayTitleScreen();
-
+   getKeyPress();
    clearConsole();
 
 
@@ -145,4 +161,43 @@ void gameLoop() {
       this_thread::sleep_for(chrono::milliseconds(500));
    }
    cout << "Juego terminado.\n";
+}
+
+char getKeyPress() {
+#ifdef _WIN32
+   return _getch();
+#else
+   struct termios oldt, newt;
+   char ch;
+   tcgetattr(STDIN_FILENO, &oldt);
+   newt = oldt;
+   newt.lflag &= ~(ICANON | ECHO);
+   tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+   ch = getchar();
+   tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+   return ch;
+#endif
+}
+
+void handleInput(Piece *activePiece, bool &isPaused) {                  // Procesa los comandos del jugador
+   if (_kbhit()) {
+      char key = getKeyPress();
+      if (key == 'p' || key == 'P') {
+         isPaused = !isPaused;
+      } else if (!isPaused) {
+         if (key == 'a' && canPlacePiece(activePiece, -1, 0)) {         // Mover la pieza a la izquierda
+            activePiece->x--;
+         } else if (key == 'd' && canPlacePiece(activePiece, 1, 0)) {   // Mover la pieza a la derecha 
+            activePiece->x++;
+         } else if (key == 's' && canPlacePiece(activePiece, 0, 1)) {   // Bajar la pieza
+            activePiece->y++;
+         } else if (key == 'w') {                                       // Rotar la pieza
+            rotatePiece(activePiece);
+         } else if (key == ' ') {                                       // Colocar la pieza
+            while (canPlacePiece(activePiece, 0, 1)) {
+               activePiece->y++;
+            }
+         }
+      }
+   }
 }
