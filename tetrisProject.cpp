@@ -180,7 +180,6 @@ void renderGame(const Piece *activePiece, const Piece *nextPiece, bool isPaused)
    previousScreen = currentScreen;
 }
 
-
 Piece *createRandomPiece() {
     static std::random_device rd;           // Fuente de entropía
     static std::mt19937 gen(rd());          // Generador basado en Mersenne Twister
