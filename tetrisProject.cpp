@@ -1,6 +1,6 @@
 #include <iostream>     // Manejo de entrada/salida estándar
 #include <vector>       // Uso de vectores para las piezas y el tablero
-#include <random>
+#include <random>       // Uso de números aleatorios para la posición inicial de las piezas
 #include <thread>       // Manejo de hilos para pausas y temporización
 #include <chrono>       // Gestión precisa de tiempo
 #include <algorithm>    // Funciones de utilidad como all_of() y fill()
