@@ -6,6 +6,7 @@
 #include <algorithm>    // Funciones de utilidad como all_of() y fill()
 #include <queue>        // Cola para manejar las piezas próximas
 #include <csignal>      // Manejo de señales del sistema (como SIGINT)
+#include <locale.h>
 
 // Libreria para multiplataformas
 #ifdef _WIN32 // Windows
@@ -259,19 +260,32 @@ char getKeyPress() {          // Obtiene la tecla presionada por el usuario
 
 void handleInput(Piece *activePiece, bool &isPaused) {                  // Procesa los comandos del jugador
    if (_kbhit()) {
-      char key = getKeyPress();
-      if (key == 'p' || key == 'P') {
-         isPaused = !isPaused;
-      } else if (!isPaused) {
-         if (key == 'a' && canPlacePiece(activePiece, -1, 0)) {         // Mover la pieza a la izquierda
+      int key = getch();;
+      if (key == 0 || key == 224) {
+         int arrowKey = getch();
+         if (!isPaused) {
+            if (arrowKey == 75 && canPlacePiece(activePiece, -1, 0)) {  // Flecha izquierda
             activePiece->x--;
-         } else if (key == 'd' && canPlacePiece(activePiece, 1, 0)) {   // Mover la pieza a la derecha 
+            } else if (arrowKey == 77 && canPlacePiece(activePiece, 1, 0)) {  // Flecha derecha 
             activePiece->x++;
-         } else if (key == 's' && canPlacePiece(activePiece, 0, 1)) {   // Bajar la pieza
+            } else if (arrowKey == 80 && canPlacePiece(activePiece, 0, 1)) {  // Flecha abajo
             activePiece->y++;
-         } else if (key == 'w') {                                       // Rotar la pieza
+            } else if (arrowKey == 72) {  // Flecha arriba (rotar la pieza)                                       // Rotar la pieza
             rotatePiece(activePiece);
-         } else if (key == ' ') {                                       // Colocar la pieza
+            }
+         }
+      } else if (key == 'p' || key == 'P') {  // Pausar/reanudar
+         isPaused = !isPaused;
+         } else if (!isPaused) {
+            if (key == 'a' && canPlacePiece(activePiece, -1, 0)) {  // 'a' para mover izquierda   
+               activePiece->x--;
+         } else if (key == 'd' && canPlacePiece(activePiece, 1, 0)) {  // 'd' para mover derecha
+            activePiece->x++;
+         } else if (key == 's' && canPlacePiece(activePiece, 0, 1)) {  // 's' para bajar
+            activePiece->y++;
+         } else if (key == 'w') {  // 'w' para rotar
+            rotatePiece(activePiece);
+         } else if (key == ' ') {  // Barra espaciadora para colocar la pieza
             while (canPlacePiece(activePiece, 0, 1)) {
                activePiece->y++;
             }
@@ -341,3 +355,5 @@ void displayGameOver() {               // Muestra el mensaje de Game Over
 void signalHandler(int signum) {             // Maneja señales como SIGINT
    gameCancelled = true;
 }
+
+//bkjbkb
