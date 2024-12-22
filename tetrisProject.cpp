@@ -354,5 +354,3 @@ void displayGameOver() {               // Muestra el mensaje de Game Over
 void signalHandler(int signum) {             // Maneja señales como SIGINT
    gameCancelled = true;
 }
-
-//bkjbkb
