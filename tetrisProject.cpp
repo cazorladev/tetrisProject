@@ -62,7 +62,7 @@ void displayTitleScreen();       // Muestra la pantalla de bienvenida
 void resetGame();                // Reinicia el estado del juego
 void clearConsole();             // Limpia la consola
 
-// Funciones de renderización
+// Funciones de renderización del juego
 void renderGame(const Piece *activePiece, const Piece *nextPiece, bool isPaused);   // Renderiza el estado del juego
 
 // Funciones de mecánica del juego
@@ -190,9 +190,9 @@ void renderGame(const Piece *activePiece, const Piece *nextPiece, bool isPaused)
 }
 
 Piece *createRandomPiece() {  // Crea una pieza Tetromino aleatoria
-   static std::random_device rd;
-   static std::mt19937 gen(rd());          // Generador basado en Mersenne Twister
-   static std::uniform_int_distribution<> distrib(0, TETROMINO_SHAPES.size() - 1); // Distribución uniforme
+   static random_device rd;
+   static mt19937 gen(rd());          // Generador basado en Mersenne Twister
+   static uniform_int_distribution<> distrib(0, TETROMINO_SHAPES.size() - 1); // Distribución uniforme
 
    return new Piece(static_cast<Tetromino>(distrib(gen)));  // Generar un índice aleatorio y crear la pieza
 }
@@ -220,12 +220,12 @@ void placePiece(const Piece *piece) {     // Coloca la pieza en el tablero
 }
 
 void clearFullLines() {    // Limpia las líneas completas del tablero
-   for (int i = 0; i < HEIGHT; ++i) {
+   for (int i = 0; i < HEIGHT; ++i) { // Busca líneas completas
       if (all_of(board[i].begin(), board[i].end(), [](int cell) { return cell == 1; })) {    // Verifica si la línea está completa
          board.erase(board.begin() + i);                                                     // Elimina la línea completa
          board.insert(board.begin(), vector<int>(WIDTH, 0));                                 // Agrega una nueva línea vacía
          score += PUNTOS_POR_LINEA;                                                          // Incrementa el puntaje
-         linesCleared++;
+         linesCleared++;                                                                     // Incrementa el número de líneas eliminadas
          level = linesCleared % NIVEL_INCREMENTO == 0 ? level + 1 : level;                         // Incrementa el nivel si se han eliminado suficientes líneas
          speed = linesCleared % NIVEL_INCREMENTO == 0 ? max(VELOCIDAD_MINIMA, speed - 25) : speed; // Aumenta la velocidad del juego
       }
@@ -234,7 +234,7 @@ void clearFullLines() {    // Limpia las líneas completas del tablero
 
 void rotatePiece(Piece *piece) {    // Rota la pieza activa
    vector<vector<int>> rotated(piece->shape[0].size(), vector<int>(piece->shape.size()));    // Crea una nueva matriz para la pieza rotada
-   for (int i = 0; i < piece->shape.size(); ++i) {
+   for (int i = 0; i < piece->shape.size(); ++i) {                                           // Rota la pieza
       for (int j = 0; j < piece->shape[i].size(); ++j) {
          rotated[j][piece->shape.size() - i - 1] = piece->shape[i][j];     // Rota la pieza 90 grados
       }
@@ -244,8 +244,7 @@ void rotatePiece(Piece *piece) {    // Rota la pieza activa
       piece->shape = rotated;    // Actualiza la forma de la pieza
    } else {
       // Intenta ajustar la posición de la pieza rotada si no cabe
-      piece->x = canPlacePiece(new Piece(rotated, piece->x - 1, piece->y), 0, 0) ? piece->x - 1 : canPlacePiece(new Piece(rotated, piece->x + 1, piece->y), 0, 0) ? piece->x + 1
-                                                                                                                                                                  : piece->x;
+      piece->x = canPlacePiece(new Piece(rotated, piece->x - 1, piece->y), 0, 0) ? piece->x - 1 : canPlacePiece(new Piece(rotated, piece->x + 1, piece->y), 0, 0) ? piece->x + 1 : piece->x;                                                                                                                                                              
       piece->shape = canPlacePiece(new Piece(rotated, piece->x, piece->y), 0, 0) ? rotated : piece->shape;     // Mantiene la forma original si no se puede rotar
    }
 }
@@ -269,8 +268,8 @@ char getKeyPress() {    // Obtiene la tecla presionada por el usuario
 void handleInput(Piece *activePiece, bool &isPaused) {      // Procesa los comandos del jugador
    if (_kbhit()) {                                          // Verifica si hay una tecla presionada
       int key = getch();;                                   // Obtiene la tecla presionada
-      if (key == 0 || key == 224) {                         // Manejo de teclas de flecha
-         int arrowKey = getch();
+      if (key == 0 || key == 224) {                         // Verifica si la tecla es una tecla de función
+         int arrowKey = getch();                            // Obtiene la tecla de flecha
          if (!isPaused) {                                                     // Si el juego no está en pausa
             if (arrowKey == 75 && canPlacePiece(activePiece, -1, 0)) {        // Flecha izquierda
             activePiece->x--;                                                 // Mueve la pieza a la izquierda
@@ -303,7 +302,7 @@ void handleInput(Piece *activePiece, bool &isPaused) {      // Procesa los coman
 }
 
 void gameLoop() {    // Bucle principal del juego                                     
-   cout << "\033[?25l";
+   cout << "\033[?25l";                               // Oculta el cursor
    Piece *activePiece = createRandomPiece();          // Crea la pieza activa
    upcomingPieces.push(createRandomPiece());          // Agrega una nueva pieza a la cola
    Piece *nextPiece = upcomingPieces.front();         // Obtiene la próxima pieza

@@ -5,6 +5,7 @@
       "iostream": "cpp",
       "string": "cpp",
       "format": "cpp",
-      "new": "cpp"
+      "new": "cpp",
+      "algorithm": "cpp"
    }
 }
