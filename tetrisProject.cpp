@@ -5,11 +5,11 @@
 #include <chrono>       // Gestión precisa de tiempo
 #include <algorithm>    // Funciones de utilidad como all_of() y fill()
 #include <queue>        // Cola para manejar las piezas próximas
-#include <csignal>      // Manejo de señales del sistema (como SIGINT)
-#include <locale.h>     // Manejo de localización
+#include <csignal>      // Manejo de señales para terminar el programa
+#include <locale.h>     // configura la localización de la aplicación para trabajar con un idioma y formato específicos
 
 // Libreria para multiplataformas
-#ifdef _WIN32 // Windows
+#ifdef _WIN32 // Directiva de preprocesador para Windows
 #include <conio.h> // Captura de teclas en Windows
 #include <windows.h> // Captura de teclas en Windows
 #else
@@ -23,7 +23,7 @@ using namespace std;
 const int WIDTH = 10, HEIGHT = 20;     // Dimensiones del tablero
 const int PUNTOS_POR_LINEA = 100;      // Puntos por línea eliminada
 const int NIVEL_INCREMENTO = 5;        // Incremento de nivel
-const int VELOCIDAD_MINIMA = 100;      // Velocidad mínima del juego
+const int VELOCIDAD_MINIMA = 100;      // Velocidad minima 
 
 // Enumeración para los tipos de Tetrominos
 enum Tetromino {I, J, L, O, S, T, Z};
@@ -126,16 +126,20 @@ void resetGame() {   // Reinicia el estado del tablero y las estadísticas
 }
 
 void clearConsole() {   // Limpia la pantalla
-   cout << "\033[2J\033[H";
+   #ifdef _WIN32
+      system("cls");  // Limpia la pantalla en Windows
+   #else
+      cout << "\033[2J\033[H";  // Limpia la pantalla en Unix/Linux
+   #endif
 }
 
 void renderGame(const Piece *activePiece, const Piece *nextPiece, bool isPaused) {  // Renderiza el tablero y las piezas
    static vector<string> previousScreen;     // Almacena la pantalla anterior para optimizar la renderización
    vector<string> currentScreen(HEIGHT + 10);   // Pantalla actual
 
-   for (int i = 0; i < HEIGHT; ++i) {  // Construcción visual del tablero
+   for (int i = 0; i < HEIGHT; ++i) {  // Construcción visual del tablero (filas)
       string row = "<|";
-      for (int j = 0; j < WIDTH; ++j) {
+      for (int j = 0; j < WIDTH; ++j) { // Construcción visual del tablero (columnas)
          bool isPiece = false;      // Bandera para verificar si hay una pieza en la posición
          for (int pi = 0; pi < activePiece->shape.size(); ++pi) {
             for (int pj = 0; pj < activePiece->shape[pi].size(); ++pj) {
